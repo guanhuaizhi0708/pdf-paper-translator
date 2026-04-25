@@ -1,72 +1,73 @@
-# arXiv 论文翻译SKILL
+以下是修改后的 README.md，适用于 PDF 论文翻译技能：
 
-这是一个用于将 arXiv 论文翻译为**中文**的 Agent SKILL。
+```markdown
+# PDF 论文翻译SKILL
+
+这是一个用于将 PDF 学术论文翻译为**中文**的 Agent SKILL。
 
 > Skills follow the [Agent Skills](https://agentskills.io/) format.
 
 ## Features
 
-- 下载指定 arXiv 论文的 LaTeX 源代码
-- **保留原始的样式**: 基于原始的 LaTeX 进行翻译, 编译PDF 可以保留原始的样式和格式。
-- **可以指定翻译的章节**: 你可以在Agent执行翻译时指定要翻译的章节，而不是整个论文。
-
-### 翻译结果示例：
-
-<table>
-  <tr>
-    <td>
-      <img width="516" alt="original" src="https://github.com/user-attachments/assets/f727d06a-580a-48b8-87aa-a2eae34d146c" />
-    </td>
-    <td>
-      <img width="516"  alt="translated" src="https://github.com/user-attachments/assets/a75551c7-eb07-4211-a1fd-548739e4a771" />
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <img width="533" alt="original" src="https://github.com/user-attachments/assets/5bf1604c-51d7-4912-82a2-500cbbcf8907" />
-    </td>
-    <td>
-      <img width="533" alt="translated" src="https://github.com/user-attachments/assets/a72ab10f-f418-484a-bc13-e6cf4e72095f" />
-    </td>
-  </tr>
-</table>
+- 支持本地 PDF 文件或 URL 链接
+- **保留原始的样式**: 自动将 PDF 内容转换为 LaTeX，编译后生成与原版布局一致的翻译版 PDF
+- **可以指定翻译的章节**: 你可以在 Agent 执行翻译时指定要翻译的章节，而不是整个论文
+- **支持扫描版 PDF**: 自动进行 OCR 识别（需安装 `ocrmypdf`）
 
 > [!NOTE]
-> 如果你需要的是**PDF 文件**翻译，推荐你直接使用 [PDFMathTranslate](https://github.com/PDFMathTranslate/PDFMathTranslate)
+> 本技能适用于任意 PDF 论文。如果你需要单独翻译 arXiv 论文（有原始 LaTeX 源码），可以使用 [arXiv 版本](https://github.com/yrom/arxiv-paper-translator)。
 
+## 前置条件
 
-## 前置条件（二选一）
+### 必须满足以下之一：
+1. 本地安装 `xelatex` 以及 PDF 转换工具（`pandoc`, `poppler-utils`）
+2. **或者** 安装 `docker`，使用 [TeXLive Docker 镜像](https://github.com/xu-cheng/latex-docker) 进行编译
 
-1. 可以运行 `xelatex` 工具用于编译 LaTeX 文档。
-2. **或者** 可以执行 `docker`， 使用 [TeXLive Docker 镜像](https://github.com/xu-cheng/latex-docker)来编译 LaTeX 文档。
+### 推荐安装的附加工具（用于 PDF → LaTeX 转换）：
+```bash
+# macOS
+brew install pandoc poppler tesseract ocrmypdf
 
-> 如何在你电脑上安装这些工具请问你的AI助手😄 
+# Ubuntu/Debian
+sudo apt-get install pandoc poppler-utils tesseract-ocr ocrmypdf
+```
+
+> 如何在你电脑上安装这些工具请问你的AI助手😄
 
 ## 使用方法
 
-安装这个SKILL：
+安装这个 SKILL：
 
 ```sh
-npx skills add yrom/arxiv-paper-translator
+npx skills add your-username/pdf-paper-translator
 ```
 
-在你的AI助手中使用它， e.g.：
+在你的 AI 助手中使用它，例如：
 
 ```md
-> Use arxiv paper translator SKILL. 翻译arXiv的论文为中文，ID 为：2601.20245
+> Use pdf paper translator SKILL. 翻译本地的 /path/to/paper.pdf 为中文
 
-> 翻译arxiv:2602.02276 为中文。跳过附录（Appendix）、还有实验eval部分不用翻译。
+> 翻译 https://example.com/paper.pdf 为中文，跳过附录和实验 eval 部分
 
-> /arxiv-paper-translator 翻译arXiv:2601.20802 为中文，同时整理核心观点输出一份中文博客用于分享
+> /pdf-paper-translator 翻译 ~/Downloads/thesis.pdf 为中文，同时整理核心观点输出一份中文博客用于分享
 ```
 
-## 一行指令翻译arxiv上的论文为中文
+## 一行指令翻译 PDF 论文为中文
 
 ```bash
-claude -p "/arxiv-paper-translator 翻译arxiv:2602.04118为中文、Acknowledgement部分不翻译。使用Docker镜像编译pdf。注意挂载正确的workspace给docker。如果内容很多，可以派发subagent来并行处理。翻译完成需要整体review一下翻译后的内容的质量，特别关注术语一致性、学术性、专业性、正确性。" --allowedTools "Read,Write,Edit,Bash,Task"
+claude -p "/pdf-paper-translator 翻译 https://arxiv.org/pdf/2602.04118.pdf 为中文、Acknowledgement 部分不翻译。使用 Docker 镜像编译 pdf。注意挂载正确的 workspace 给 docker。如果内容很多，可以派发 subagent 来并行处理。翻译完成需要整体 review 一下翻译后的内容的质量，特别关注术语一致性、学术性、专业性、正确性。" --allowedTools "Read,Write,Edit,Bash,Task"
 ```
-
 
 ## LICENSE
 
 MIT
+```
+
+主要改动：
+- 标题和描述改为 “PDF 论文翻译”
+- Features 中增加支持本地/URL、扫描版 PDF OCR 说明
+- 前置条件增加 pandoc、poppler-utils 等 PDF 转换依赖
+- 安装命令改为示例 `your-username/pdf-paper-translator`（用户可替换为自己的仓库）
+- 使用示例改为 PDF 文件路径或 URL
+- 一行指令示例改为 PDF URL 形式
+- 保留 MIT 许可证
