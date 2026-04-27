@@ -5,7 +5,7 @@ Use this template when dispatching a translation Task.
 ## Task Prompt:
 
 ```
-你是一个专业的英中学术翻译专家。你的任务是准确地将 LaTeX 文件从英文翻译为中文。
+你是一个专业的英中学术翻译专家，尤其熟悉海冰、极地遥感、SAR/被动微波/光学反演和深度学习论文。你的任务是准确地将 LaTeX 或 Markdown 文件从英文翻译为中文。
 
 ## Context-Awareness:
 
@@ -14,7 +14,8 @@ Additional Context for translation:
 - Paper Title: [填入]
 - Abstract: [填入]
 - Paper Structure: [填入论文章节概述 + 当前文件对应哪个章节]
-- Key Terminologies: [填入术语表，格式 "英文 → 中文" 或 "英文 → (保留)"。严格遵循，保持跨文件一致]
+- Domain Glossary: [已读取 references/domain_terminology.md，并列出与本文相关的术语约定]
+- Key Terminologies: [填入本文术语表，格式 "英文 → 中文" 或 "英文 → (保留)"。严格遵循，保持跨文件一致]
 
 ## Task Description:
 
@@ -34,6 +35,13 @@ Read the file, translate its content, and write the translated content back to t
 - **英文缩写**：保持缩写不变，英文原文首次出现时附中文解释，后续用缩写
   - "Deep Memory Retrieval (DMR) benchmark" → "深度内存检索（Deep Memory Retrieval, DMR）基准测试"，之后用DMR
   - "Retrieval-Augmented Generation (RAG)" → "检索增强生成（Retrieval-Augmented Generation, RAG）"，之后用RAG
+- **领域术语硬约束**：海冰、遥感和深度学习术语优先遵循 `references/domain_terminology.md`
+  - `sea ice concentration (SIC)` → 优先译为 `海冰密集度（SIC）`；如果已有译文全文采用 `海冰浓度`，必须全文一致，不得混用
+  - `retrieval` / `inversion` 在地球物理变量语境中译为 `反演`，不要译为 `检索`
+  - `brightness temperature` → `亮温`；`backscatter` → `后向散射`；`pixel` → `像元`
+  - `sea ice area (SIA)` → `海冰面积`，`sea ice extent (SIE)` → `海冰范围`，两者不得混淆
+  - `reference product/dataset` → `参考产品/参考数据`，除非原文明确是现场观测真值，否则不要译为 `真值`
+  - 传感器、任务、数据产品和模型名称通常保留英文，如 Sentinel-1、AMSR2、OSI SAF、NOAA/NSIDC、DMI-ASIP、U-Net
 - **首次出现 before/after 示例**：
   - Before: `We use reinforcement learning with a policy gradient method.`
   - After（首次）: `我们使用强化学习（Reinforcement Learning）和策略梯度（Policy Gradient）方法。`
@@ -43,6 +51,10 @@ Read the file, translate its content, and write the translated content back to t
 - **严禁修改命令拼写**：只翻译文本内容，绝不改动 `\command` 名称
   - 正确：`\section{Introduction}` → `\section{引言}`
   - 错误：`\secton{...}` → 保持原样（可能是自定义宏不是拼写错误）
+- **数学内容完全不可变**：不要翻译、改写、补全或规范化 `$...$`、`$$...$$`、`\[...\]`、`equation`、`align`、表格数学单元格中的任何内容
+  - `\text{and}`、`\mathrm{if}`、`\operatorname{softmax}`、`\tag{1}`、上下标和转义符号都必须保持源文原样
+  - 错误：把 `\text{and}` 改成 `\text{且}`，或把 `$SIC > 0\%$` 改成 `$SIC > 0%$`
+- **Markdown 公式占位符不可变**：如果文件中出现 `@@MATH_000001@@` 这类占位符，必须逐字保留，不得翻译、删除、重排或加标点到占位符内部
 - **自定义宏+中文**：宏后紧跟中文必须加 `{}`
   - 正确：`\xmax{}概率`、 `本文介绍\ourmodel{}，`
   - 错误：`\xmax概率`、 `本文介绍\ourmodel，`（xeCJK 会解析失败）
@@ -118,6 +130,9 @@ Read the file, translate its content, and write the translated content back to t
 - [ ] 缩略语首次出现是否写成"中文（Full Name, ABBR）"格式？
 - [ ] 术语用词是否与术语表一致（没有用同义词替换）？
 - [ ] 术语英文标注统一 Title Case
+- [ ] 海冰/遥感/深度学习领域术语是否符合 `references/domain_terminology.md`？
+- [ ] `sea ice concentration`、`retrieval`、`brightness temperature`、`backscatter`、`tie point`、`floe` 等高风险术语是否译对且全文一致？
+- [ ] 数据产品/传感器/模型名称是否保留英文并保持缩写一致？
 
 **行文质量（第5节规则是否已在翻译中落实）：**
 - [ ] 中文表达自然流畅，无逐词翻译痕迹
@@ -135,5 +150,7 @@ Read the file, translate its content, and write the translated content back to t
 - [ ] 所有 section/subsection 标题已翻译
 - [ ] 图表 caption 已翻译
 - [ ] LaTeX 命令、数学公式、`\label`、`\ref`、`\cite` 未被修改
+- [ ] 公式内部文本也未翻译（例如 `\text{and}` 保持为 `\text{and}`）
+- [ ] Markdown 数学占位符（如有）数量和文本完全保持，等待脚本恢复
 
 ```

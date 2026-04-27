@@ -6,9 +6,11 @@ This document provides detailed guidelines for translating academic papers from 
 
 1. **Preserve LaTeX structure** - All commands, environments, and macros must remain valid
 2. **Maintain scientific accuracy** - Mathematical expressions and technical terms must be precise
-3. **Keep compilability** - The translated document must compile without errors
-4. **Selective translation** - Only translate content meant for readers, not code/formulas
-5. **Follow academic translation prompt** - See [translation_prompt.md](translation_prompt.md)
+3. **Keep math immutable** - Do not translate or normalize anything inside math mode
+4. **Keep compilability** - The translated document must compile without errors
+5. **Selective translation** - Only translate content meant for readers, not code/formulas
+6. **Use domain terminology** - For sea ice, remote sensing, and deep learning papers, read [domain_terminology.md](domain_terminology.md) before translation
+7. **Follow academic translation prompt** - See [translation_prompt.md](translation_prompt.md)
 
 ## What to Translate
 
@@ -82,6 +84,9 @@ do NOT translate it. Only translate narrative content meant for human readers.
    f(x) = \sum_{i=1}^{n} w_i x_i + b
    \end{equation}
    ```
+   This includes text inside math commands. Keep `\text{and}`, `\mathrm{if}`,
+   `\operatorname{softmax}`, equation tags, subscripts, superscripts, and escaped
+   symbols exactly as in the source. Do not translate `\text{and}` to `\text{且}`.
 
 2. **LaTeX commands and environments**
    ```latex
@@ -220,6 +225,24 @@ The loss function $\mathcal{L}$ measures the error.
 损失函数 $\mathcal{L}$ 用于衡量误差。
 ```
 
+### Markdown Formula Guard
+
+For Markdown deliverables, protect math before translation and restore it after
+translation:
+
+```bash
+python3 scripts/protect_math.py check paper/source.md --strict-cjk
+python3 scripts/protect_math.py protect paper/source.md --output paper/source.protected.md --manifest paper/source.math.json
+# translate source.protected.md, preserving @@MATH_000001@@ placeholders exactly
+python3 scripts/protect_math.py restore paper/source.protected-zh.md --manifest paper/source.math.json --output paper/source-翻译.md
+python3 scripts/protect_math.py check paper/source-翻译.md --strict-cjk
+python3 scripts/protect_math.py compare paper/source.md paper/source-翻译.md
+```
+
+If `check` reports unescaped `%` inside math, repair the source formula first
+(`$SIC > 0\%$`), then rerun protection. If `compare` fails, do not deliver the
+Markdown; restore from placeholders again or repair against the source/PDF.
+
 ### Acronyms
 
 First mention: provide both English and Chinese
@@ -243,6 +266,29 @@ CNNs achieve high accuracy.
 % After
 CNN具有很高的准确率。
 ```
+
+### Sea-Ice and Remote-Sensing Terms
+
+For this skill's target papers, always build a terminology table before translating. Use [domain_terminology.md](domain_terminology.md) as the default glossary.
+
+High-risk examples:
+
+| English | Preferred Chinese |
+|---|---|
+| sea ice concentration (SIC) | 海冰密集度（SIC） |
+| sea ice area (SIA) | 海冰面积（SIA） |
+| sea ice extent (SIE) | 海冰范围（SIE） |
+| retrieval / inversion | 反演 |
+| brightness temperature | 亮温 |
+| backscatter | 后向散射 |
+| normalized radar cross section (`\sigma^0`) | 归一化雷达截面 / 后向散射系数 |
+| marginal ice zone (MIZ) | 边缘冰区（MIZ） |
+| melt pond fraction (MPF) | 融池比例（MPF） |
+| ice floe / floe | 浮冰块 |
+| tie point | 系点 |
+| reference product/dataset | 参考产品 / 参考数据 |
+
+Keep product, mission, dataset, and model names such as Sentinel-1, AMSR2, OSI SAF, NOAA/NSIDC, DMI-ASIP, and U-Net in English unless the paper provides an official Chinese name.
 
 ### Comments in LaTeX Source
 
