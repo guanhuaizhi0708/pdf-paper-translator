@@ -2,37 +2,44 @@
 
 ## 1. File Completeness
 
-- Verify all .tex files are translated or copied (skip files that are not translated)
+- Verify the Markdown-first deliverables exist:
 ```bash
-diff <(cd paper_source && find . -name "*.tex" -type f | sort) \
-     <(cd paper_cn && find . -name "*.tex" -type f | sort)
+test -f paper/${PAPER_ID}.source.md
+test -f paper/${PAPER_ID}.terms.md
+test -f paper/${PAPER_ID}.protected.md
+test -f paper/${PAPER_ID}.math-map.md
+test -f paper/${PAPER_ID}.protected-zh.md
+test -f paper/${PAPER_ID}-翻译.md
 ```
-- Verify all non-text files copied correctly
-```bash
-diff <(cd paper_source && find . -type f -not -name "*.tex" | sort) \
-     <(cd paper_cn && find . -type f -not -name "*.tex" | sort)
-```
+
+If the input was a PDF, verify the Markdown source was built from `pdftotext`/OCR extraction and not from a PDF-to-LaTeX conversion.
 
 ## 2. Markdown Formula Integrity
 
-For every Markdown deliverable, run the formula guard before delivery:
+For every Markdown deliverable, run these searches before delivery:
 
 ```bash
-python3 scripts/protect_math.py check paper/source-翻译.md --strict-cjk
-python3 scripts/protect_math.py compare paper/source.md paper/source-翻译.md
+rg -n "@@MATH_" paper/${PAPER_ID}-翻译.md
+rg -n "全球气候引擎|补充性高分辨率来源|工作空间分辨率|对大气条件的不变性更强|AI就绪|结果兴趣区域|letter-value图|原始logit输出|重分配为0%|快速发射" paper/${PAPER_ID}-翻译.md
 ```
 
 Verify:
 
 - [ ] No `@@MATH_000001@@` placeholders remain
+- [ ] Placeholder numbering in `paper/${PAPER_ID}.math-map.md` is complete, unique, and ordered
 - [ ] Math span count and content are identical to the pre-translation source Markdown
 - [ ] No CJK characters were introduced inside math
 - [ ] Percent signs inside math are escaped as `\%`
 - [ ] Display math delimiters (`$$...$$`, `\[...\]`) and inline math delimiters are balanced
+- [ ] No sample-derived translationese phrases or mixed Chinese-English compounds remain
 
-If any check fails, do not deliver the Markdown. Restore formulas from the manifest or repair against the original source/PDF and rerun checks.
+Before delivery, compare `source.md`, `protected.md`, `protected-zh.md`, and `-翻译.md` side by side for at least the title, one formula-heavy paragraph, one caption, and the conclusion.
 
-## 3. LaTeX Command Spelling
+If any check fails, do not deliver the Markdown. Restore formulas from the manual mapping file or repair against the original source/PDF and rerun checks.
+
+## 3. Optional LaTeX Command Spelling
+
+Only run this section when the user provided source `.tex` files. It is not part of the default PDF workflow.
 
 Detect misspelled commands introduced during translation (e.g. `\footnotetext` → `\footnotext`):
 
@@ -44,7 +51,9 @@ diff <(cd paper_source && grep -ohrIE '\\[a-zA-Z]+' | sort -u) \
 
 Right-side-only commands are suspicious. Verify each one — if not intentionally added (e.g. `\figurename`, `\setCJKmainfont`), it's likely a typo.
 
-## 4. CJK Catcode Issue
+## 4. Optional CJK Catcode Issue
+
+Only run this section when the user provided source `.tex` files.
 
 Find custom macros directly followed by CJK characters (missing `{}`):
 
@@ -56,7 +65,7 @@ Each match needs `{}` inserted between macro and CJK text. Background: `xeCJK` s
 
 ## 5. Terminology Consistency Check
 
-For each .tex file, verify:
+For each translated Markdown file, verify:
 
 - [ ] Key terms translated consistently across all files
 - [ ] First mention of key terms includes both English and Chinese
@@ -78,29 +87,32 @@ For sea-ice, remote-sensing, and deep-learning papers, explicitly verify:
 
 ## 6. Translation Quality Check
 
-For each .tex file, verify:
-
+For each translated file, verify:
 - [ ] Chinese expression is natural and fluent (avoiding direct translation artifacts)
 - [ ] Academic language style is maintained throughout
 - [ ] Sentence structures follow Chinese expression patterns
 - [ ] Key verbs translated appropriately
 - [ ] No colloquial expressions or overly casual language
 - [ ] Technical descriptions are precise and professional
+- [ ] Title, highlights, abstract, captions, and conclusion have been polished beyond a literal first draft
+- [ ] No mixed Chinese-English compounds such as `letter-value图`, `AI就绪`, or `logit输出`
+- [ ] No sample-derived bad phrases such as `结果兴趣区域` or `工作空间分辨率`
 
 ## 7. Content Spot-Check
 
-For each .tex file, compare with source to verify:
+For each translated Markdown file, compare with source to verify:
 
-- [ ] Paper title (`\title{...}` / `\icmltitle{...}`) translated
-- [ ] `\thanks{...}`, `\footnote{...}`, `\footnotetext{...}` content translated
+- [ ] Paper title translated
+- [ ] Footnotes and author notes translated where appropriate
 - [ ] All section/subsection titles translated
 - [ ] Figure and table captions translated
-- [ ] LaTeX commands and math formulas unchanged
+- [ ] Math formulas unchanged
 - [ ] Text inside math commands unchanged (for example `\text{and}` is not translated)
-- [ ] File paths (`\input`, `\includegraphics`) unchanged
-- [ ] Labels and references (`\label`, `\ref`, `\cite`) unchanged
+- [ ] URLs, citations, figure references, and dataset names unchanged where they should be preserved
 
-## 8. Template Hard-coded Labels
+## 8. Optional Template Hard-coded Labels
+
+Only run this section when the user provided source `.tex`, `.sty`, or `.cls` files.
 
 Check .sty/.cls files in `paper_cn/` for visible English strings that should be localized:
 

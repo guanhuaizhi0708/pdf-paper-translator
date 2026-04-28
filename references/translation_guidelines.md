@@ -1,16 +1,17 @@
-# LaTeX Source Translation Guidelines
+# Markdown-First Paper Translation Guidelines
 
-This document provides detailed guidelines for translating academic papers from English to Chinese while preserving LaTeX structure and compilability.
+This document provides detailed guidelines for translating academic papers from English to Chinese in a Markdown-first workflow. For local PDFs, extract text with `pdftotext`/OCR, normalize it into Markdown, protect formulas, and translate the Markdown. Do not convert PDF content into LaTeX by default.
 
 ## Core Principles
 
-1. **Preserve LaTeX structure** - All commands, environments, and macros must remain valid
+1. **Preserve Markdown structure** - Headings, lists, tables, captions, citations, URLs, and code blocks must remain stable
 2. **Maintain scientific accuracy** - Mathematical expressions and technical terms must be precise
 3. **Keep math immutable** - Do not translate or normalize anything inside math mode
-4. **Keep compilability** - The translated document must compile without errors
-5. **Selective translation** - Only translate content meant for readers, not code/formulas
+4. **Avoid PDF-to-LaTeX conversion** - Use LaTeX-specific rules only if the user provides source `.tex` files
+5. **Selective translation** - Only translate content meant for readers, not code/formulas/placeholders
 6. **Use domain terminology** - For sea ice, remote sensing, and deep learning papers, read [domain_terminology.md](domain_terminology.md) before translation
 7. **Follow academic translation prompt** - See [translation_prompt.md](translation_prompt.md)
+8. **Draft then polish** - Complete a faithful first draft, then do a second-pass rewrite into natural academic Chinese before delivery
 
 ## What to Translate
 
@@ -21,51 +22,42 @@ This document provides detailed guidelines for translating academic papers from 
    - Section, subsection, chapter titles
    - Abstract and conclusion text
 
-2. **Paper title** — Translate text inside `\title{...}` / `\icmltitle{...}` and similar title commands
+2. **Paper title** — Translate the Markdown title or title text extracted from the PDF
 
 3. **Captions and labels**
-   - Figure captions: `\caption{...}`
+   - Figure captions
    - Table captions
    - Algorithm/listing titles
 
 4. **Comments for readers**
-   - Footnotes: `\footnote{...}`
-   - Author footnotes: `\thanks{...}`
+   - Footnotes
+   - Author notes
    - Margin notes meant for reading
 
-5. **Hard-coded English labels in conference/journal .sty/.cls**
-   - Check template files for visible English strings such as `Abstract`, `Equal contribution`, `Correspondence to:`, `Under review`, `Preprint`, etc.
-   - Override with `\renewcommand` or edit the .sty/.cls strings directly
-   ```latex
-   % Example: override ICML template label
-   \renewcommand{\icmlEqualContribution}{\textsuperscript{*}同等贡献 }
-   ```
-   - If no overridable command exists, edit the .sty/.cls copy in `paper_cn/` directly
-
-6. **Bibliography context (optional)**
-   - Paper titles in `\bibitem` if desired
+5. **Bibliography context (optional)**
+   - Paper titles in references if desired
    - Keep original for traceability
 
 ### Example: Main Text
 
-```latex
+```markdown
 % Before
-\section{Introduction}
+# Introduction
 Deep learning has revolutionized computer vision.
 
 % After
-\section{引言}
+# 引言
 深度学习已经彻底改变了计算机视觉领域。
 ```
 
 ### Example: Captions
 
-```latex
+```markdown
 % Before
-\caption{Accuracy comparison on ImageNet dataset.}
+Figure 1. Accuracy comparison on ImageNet dataset.
 
 % After
-\caption{在ImageNet数据集上的准确率对比。}
+图 1. 在 ImageNet 数据集上的准确率对比。
 ```
 
 ## What NOT to Translate
@@ -88,7 +80,13 @@ do NOT translate it. Only translate narrative content meant for human readers.
    `\operatorname{softmax}`, equation tags, subscripts, superscripts, and escaped
    symbols exactly as in the source. Do not translate `\text{and}` to `\text{且}`.
 
-2. **LaTeX commands and environments**
+2. **Markdown math placeholders**
+   ```markdown
+   @@MATH_000001@@
+   ```
+   Keep placeholders byte-for-byte until formulas are restored from the mapping file.
+
+3. **LaTeX commands and environments** (only if the source is already LaTeX)
    ```latex
    % Keep these commands as-is
    \begin{figure}
@@ -97,7 +95,7 @@ do NOT translate it. Only translate narrative content meant for human readers.
    \end{figure}
    ```
 
-3. **Content in lstlisting and minted blocks**
+4. **Content in code blocks**
    ```latex
    % Code remains in English
    \begin{lstlisting}[language=Python]
@@ -228,20 +226,30 @@ The loss function $\mathcal{L}$ measures the error.
 ### Markdown Formula Guard
 
 For Markdown deliverables, protect math before translation and restore it after
-translation:
+translation by hand:
+
+1. Copy `paper/${PAPER_ID}.source.md` to `paper/${PAPER_ID}.protected.md`.
+2. Replace every math span with sequential placeholders such as `@@MATH_000001@@`.
+3. Record the exact placeholder-to-formula mapping in `paper/${PAPER_ID}.math-map.md`.
+4. Translate `paper/${PAPER_ID}.protected.md` into `paper/${PAPER_ID}.protected-zh.md`, preserving placeholders exactly.
+5. Restore formulas manually from the mapping file into `paper/${PAPER_ID}-翻译.md`.
+
+Then verify:
 
 ```bash
-python3 scripts/protect_math.py check paper/source.md --strict-cjk
-python3 scripts/protect_math.py protect paper/source.md --output paper/source.protected.md --manifest paper/source.math.json
-# translate source.protected.md, preserving @@MATH_000001@@ placeholders exactly
-python3 scripts/protect_math.py restore paper/source.protected-zh.md --manifest paper/source.math.json --output paper/source-翻译.md
-python3 scripts/protect_math.py check paper/source-翻译.md --strict-cjk
-python3 scripts/protect_math.py compare paper/source.md paper/source-翻译.md
+rg -n "@@MATH_" paper/${PAPER_ID}-翻译.md
+rg -n "全球气候引擎|补充性高分辨率来源|工作空间分辨率|对大气条件的不变性更强|AI就绪|结果兴趣区域|letter-value图|原始logit输出|重分配为0%|快速发射" paper/${PAPER_ID}-翻译.md
 ```
 
-If `check` reports unescaped `%` inside math, repair the source formula first
-(`$SIC > 0\%$`), then rerun protection. If `compare` fails, do not deliver the
-Markdown; restore from placeholders again or repair against the source/PDF.
+Also compare source and translation side by side to confirm:
+- all placeholders were restored
+- placeholder numbering in `paper/${PAPER_ID}.math-map.md` is complete and unique
+- math span count is unchanged
+- formulas are identical
+- `%` inside math remains `\%`
+- no CJK characters were introduced into math
+
+If a placeholder is missing, duplicated, or restored in the wrong position, go back to `paper/${PAPER_ID}.protected.md` and redo that segment rather than patching formulas directly in the final Markdown.
 
 ### Acronyms
 
@@ -290,9 +298,9 @@ High-risk examples:
 
 Keep product, mission, dataset, and model names such as Sentinel-1, AMSR2, OSI SAF, NOAA/NSIDC, DMI-ASIP, and U-Net in English unless the paper provides an official Chinese name.
 
-### Comments in LaTeX Source
+### Comments and Non-Reader Text
 
-Comments (`%`-prefixed lines) do not need translation — keep them as-is to save tokens.
+Comments and extraction notes that are not reader-facing do not need translation. Preserve them if they help trace the source.
 
 ```latex
 % TODO: Add more experiments  ← keep original, do not translate
@@ -301,47 +309,43 @@ Comments (`%`-prefixed lines) do not need translation — keep them as-is to sav
 
 ## File Organization
 
-### Multi-file Projects
+### Markdown-First Projects
 
-1. **Main file** (e.g., `main.tex`)
-   - Translate preamble comments if helpful
-   - Translate document content
+1. **Source Markdown** (e.g., `paper/${PAPER_ID}.source.md`)
+   - Built from `pdftotext`/OCR extraction or provided directly by the user
+   - Repair headings, captions, formulas, and obvious extraction errors before translation
 
-2. **Section files** (e.g., `sections/intro.tex`)
-   - Translate each file independently
-   - Keep `\input{}` or `\include{}` commands unchanged
+2. **Terminology Table** (e.g., `paper/${PAPER_ID}.terms.md`)
+   - Use three columns: `English | Chinese | Notes`
+   - Keep the same table visible during translation, polish, and review
 
-3. **Non-text files** (copy as-is)
-   - Images: `figures/*.pdf`, `figures/*.png`
-   - Bibliography: `references.bib` (optional translation of titles)
-   - Style files: `*.sty`, `*.cls`
-   - Build scripts: `Makefile`, `latexmkrc`
+3. **Protected Markdown** (e.g., `paper/${PAPER_ID}.protected.md`)
+   - Replace every math span with `@@MATH_000001@@`-style placeholders
+   - Keep a manual mapping file with exact original formula text
+
+4. **Translated Markdown** (e.g., `paper/${PAPER_ID}-翻译.md`)
+   - Restore formulas after translation
+   - Deliver this as the primary output
 
 ### Directory Structure
 
 ```
-paper_source/          # Original
-├── main.tex
-├── sections/
-│   ├── intro.tex
-│   └── method.tex
-├── figures/
-│   └── arch.pdf
-└── references.bib
+pdf_paper/
+└── paper.pdf
 
-paper_cn/              # Translated
-├── main.tex          # Translated
-├── sections/
-│   ├── intro.tex     # Translated
-│   └── method.tex    # Translated
-├── figures/
-│   └── arch.pdf      # Copied as-is
-└── references.bib    # Copied (or optionally translate titles)
+paper/
+├── ${PAPER_ID}.source.txt       # raw pdftotext/OCR extraction
+├── ${PAPER_ID}.source.md        # repaired Markdown source
+├── ${PAPER_ID}.terms.md         # paper-specific terminology table
+├── ${PAPER_ID}.protected.md     # math placeholders
+├── ${PAPER_ID}.math-map.md      # placeholder-to-formula mapping
+├── ${PAPER_ID}.protected-zh.md  # translated protected Markdown
+└── ${PAPER_ID}-翻译.md          # final translated Markdown
 ```
 
 ## Translation Quality Checklist
 
-For detailed automated checks (file completeness, command spelling diff, CJK catcode scan, content spot-check), see [review_checklist.md](review_checklist.md).
+For detailed checks (Markdown deliverables, formula placeholders, terminology, style, and content spot-check), see [review_checklist.md](review_checklist.md).
 
 ## Chinese Writing Guidelines
 
@@ -354,6 +358,7 @@ Follow these guidelines for better readability:
 | 去空洞修饰语 | 删空洞形容词，用数据代替 | `卓越的效率` → `速度快约100倍` |
 | 术语标注 | 英文标注统一 Title Case | `photometric loss` → `Photometric Loss` |
 | 句式精简 | 合并碎句，拆分长定语 | 三个"首先/然后/最后"短句 → 一句带顿号 |
+| 避免半中半英 | 不写 `letter-value图`、`AI就绪`、`logit输出` 这类组合 | `结果兴趣区域` → `感兴趣区域（ROI）` |
 
 ## Handling Edge Cases
 

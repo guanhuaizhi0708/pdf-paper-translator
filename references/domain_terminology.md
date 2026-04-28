@@ -55,6 +55,7 @@ Use this reference before translating papers about sea ice, polar remote sensing
 | inversion | 反演 |  |
 | forward model | 正演模型 |  |
 | geophysical variable | 地球物理变量 |  |
+| region of interest (ROI) | 感兴趣区域（ROI） | Avoid literal translations such as "结果兴趣区域". |
 | proxy variable | 代理变量 |  |
 | reference product | 参考产品 | Do not call it ground truth unless it is true in situ truth. |
 | ground truth | 真值 | Use carefully; many satellite products are only references. |
@@ -147,7 +148,10 @@ Keep these names in English; add Chinese descriptors only when useful.
 | student model | 学生模型 |  |
 | ensemble | 集成模型 |  |
 | soft target | 软目标 |  |
+| AI-ready dataset | AI-ready 数据集 / 可直接用于 AI 训练的数据集 | Avoid literal "AI就绪数据集". |
+| logit | logit / logit 值 | Prefer keeping English; in prose, `原始 logits 输出` is often more natural than `原始logit输出`. |
 | logits | logits / 逻辑值 | Prefer "logits" in ML papers; explain once if needed. |
+| letter-value plot | 字母值图（letter-value plot） | If the term is uncommon to readers, keep the English in parentheses on first mention. |
 | softmax | softmax | Keep lowercase unless sentence start. |
 | temperature scaling | 温度缩放 |  |
 | cross-entropy loss | 交叉熵损失 |  |
