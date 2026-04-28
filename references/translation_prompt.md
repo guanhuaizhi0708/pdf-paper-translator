@@ -191,6 +191,8 @@ Read the input file, translate its content, and write the translated result to t
 - [ ] 标题、摘要、研究亮点已经完成第2遍润色，不是逐词直译
 - [ ] 不存在半中半英复合词（如 `letter-value图`、`AI就绪`、`logit输出`）
 - [ ] 不存在样本已暴露的直译腔短语（如 `结果兴趣区域`、`工作空间分辨率`）
+- [ ] 含数字、百分比、阈值、比较、否定、限制条件的句子已单独复查
+- [ ] 标题、摘要首段、所有 caption、结论段已额外复查一遍
 
 **内容完整性：**
 - [ ] 脚注、作者注和补充说明已翻译（如适用）

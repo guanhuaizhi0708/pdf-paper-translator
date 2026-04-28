@@ -236,25 +236,59 @@ Also compare the source and translated Markdown side by side to ensure:
 
 If validation fails, fix the source or protected translation and rerun restore + checks. Do not rewrite formulas from memory. If a placeholder is missing, duplicated, or restored out of order, return to `paper/${PAPER_ID}.protected.md` and redo that translation segment instead of patching the final Markdown by hand.
 
-## Step 5: Review Translation
+## Step 5: Final Review and Sign-Off
 
-Review the translated Markdown following [references/review_checklist.md](references/review_checklist.md), with emphasis on:
-- Markdown formula integrity
-- terminology consistency against [references/domain_terminology.md](references/domain_terminology.md)
-- first-mention handling for key terms and acronyms
-- sample-driven style scan for literal-translation artifacts
-- the source/protected/final file chain remaining internally consistent
-- section titles, captions, tables, and claims matching the source PDF
+Review the translated Markdown following [references/review_checklist.md](references/review_checklist.md). This step is mandatory and should end with a clear delivery decision, not just a quick scan.
 
-Minimum review commands:
+Create:
+```bash
+paper/${PAPER_ID}.review-notes.md
+```
+
+Track every issue in a compact table or bullet list with:
+- `ID`
+- `Severity`: `stop-ship`, `major`, or `minor`
+- `Location`
+- `Problem`
+- `Fix`
+- `Status`
+
+### 5.1 Run four review passes
+1. **Structure pass**: confirm formulas, placeholders, headings, lists, tables, citations, URLs, and caption structure are intact.
+2. **Source-fidelity pass**: compare source and translation side by side and verify that claims, numbers, comparisons, negations, limitations, and formula-adjacent prose still mean the same thing.
+3. **Terminology pass**: check against `paper/${PAPER_ID}.terms.md` and [references/domain_terminology.md](references/domain_terminology.md), including first mention handling and acronym expansion.
+4. **Chinese polish pass**: read the Chinese on its own and smooth literal phrasing, repetition, inconsistent register, and awkward sentence rhythm without changing technical meaning.
+
+### 5.2 Mandatory spot-check coverage
+The final review must explicitly cover:
+- title, abstract, highlights, keywords, and conclusion
+- every section and subsection heading
+- every figure and table caption
+- at least one formula-adjacent paragraph in each major section
+- every sentence containing percentages, thresholds, inequalities, uncertainty, significance, comparisons, or negation
+- dataset names, sensor/product names, and method names
+- limitation statements, error analysis, and future-work claims
+
+### 5.3 Minimum review commands
 ```bash
 rg -n "@@MATH_" paper/${PAPER_ID}-翻译.md
 rg -n "全球气候引擎|补充性高分辨率来源|工作空间分辨率|对大气条件的不变性更强|AI就绪|结果兴趣区域|letter-value图|原始logit输出|重分配为0%|快速发射" paper/${PAPER_ID}-翻译.md
+rg -n '[0-9]+([.][0-9]+)?%|[<>]=?|±' paper/${PAPER_ID}.source.md paper/${PAPER_ID}-翻译.md
 ```
 
+### 5.4 Stop-ship issues
+Do **not** deliver the translation if any unresolved issue remains in these categories:
+- a number, percentage, threshold, or comparison changed meaning
+- a negation, limitation, uncertainty cue, or causal relation was weakened, strengthened, or flipped
+- a formula-adjacent sentence no longer matches the formula or variable definition
+- `sea ice concentration`, `sea ice area`, `sea ice extent`, `retrieval`, `brightness temperature`, `backscatter`, or other high-risk domain terms drifted from the glossary
+- a figure/table caption, result statement, or conclusion contradicts the source
+- any part of the document still shows extraction corruption that changes reader understanding
+
 Before delivery, confirm:
-- [ ] All review checks completed
-- [ ] Any issues identified and fixed
+- [ ] All review passes completed
+- [ ] Review notes updated with every issue and its resolution
+- [ ] All stop-ship issues resolved
 - [ ] Translation quality verified
 - [ ] No math placeholders remain
 
@@ -271,7 +305,7 @@ pdf_paper/technical_report.md
 
 1. **Translated Markdown**: `paper/${PAPER_ID}-翻译.md`
 2. **Technical report** (if requested): `pdf_paper/technical_report.md`
-3. **Intermediate sources**: `paper/${PAPER_ID}.source.md`, `paper/${PAPER_ID}.terms.md`, protected Markdown, and manual math mapping
+3. **Intermediate sources**: `paper/${PAPER_ID}.source.md`, `paper/${PAPER_ID}.terms.md`, `paper/${PAPER_ID}.review-notes.md`, protected Markdown, and manual math mapping
 
 ## Common Issues & Solutions
 
@@ -284,6 +318,7 @@ pdf_paper/technical_report.md
 | Math formulas changed after translation | Do not deliver. Restore from `paper/${PAPER_ID}.math-map.md`, then compare the source and translated Markdown again. |
 | A placeholder is lost, duplicated, or restored in the wrong position | Go back to `paper/${PAPER_ID}.protected.md`, repair that segment, and restore again. Do not hand-edit formulas in the final Markdown. |
 | Translation sounds literal or contains mixed Chinese-English compounds | Run the `rg` style scan from Step 5, rewrite flagged phrases, and check again. |
+| The translation seems fluent but a claim may have shifted meaning | Log it as `stop-ship` in `paper/${PAPER_ID}.review-notes.md`, compare source and translation sentence by sentence, and resolve it before delivery. |
 | Unescaped percent in Markdown math | Replace `%` with `\%` before protecting, e.g. `$SIC > 0\%$`. |
 | Figures are needed for a report but not preserved in Markdown | Extract them separately from the PDF and reference them in the report as images. |
 | Reference section is noisy after extraction | Keep it if the user wants a full translation; otherwise note any extraction quality limits explicitly. |

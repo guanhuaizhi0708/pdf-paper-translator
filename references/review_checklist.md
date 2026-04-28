@@ -9,6 +9,7 @@ test -f paper/${PAPER_ID}.terms.md
 test -f paper/${PAPER_ID}.protected.md
 test -f paper/${PAPER_ID}.math-map.md
 test -f paper/${PAPER_ID}.protected-zh.md
+test -f paper/${PAPER_ID}.review-notes.md
 test -f paper/${PAPER_ID}-翻译.md
 ```
 
@@ -37,7 +38,58 @@ Before delivery, compare `source.md`, `protected.md`, `protected-zh.md`, and `-�
 
 If any check fails, do not deliver the Markdown. Restore formulas from the manual mapping file or repair against the original source/PDF and rerun checks.
 
-## 3. Optional LaTeX Command Spelling
+## 3. Final Review Workflow
+
+Create or update `paper/${PAPER_ID}.review-notes.md` during review. Each issue should have:
+
+- `ID`
+- `Severity`: `stop-ship`, `major`, or `minor`
+- `Location`
+- `Problem`
+- `Fix`
+- `Status`
+
+Run these passes in order:
+
+1. **Structure pass**
+   Verify formulas, headings, lists, tables, references, URLs, and caption formatting.
+2. **Source-fidelity pass**
+   Compare source and translation line by line for factual equivalence.
+3. **Terminology pass**
+   Check the translation against `paper/${PAPER_ID}.terms.md` and [domain_terminology.md](domain_terminology.md).
+4. **Chinese-only readthrough**
+   Read the Chinese on its own and improve literal or awkward phrasing without changing meaning.
+
+## 4. Mandatory Source-Aligned Spot Checks
+
+The final review must explicitly cover:
+
+- [ ] Title, abstract, highlights, keywords, and conclusion
+- [ ] Every section and subsection heading
+- [ ] Every figure and table caption
+- [ ] At least one formula-adjacent paragraph per major section
+- [ ] Every sentence containing percentages, thresholds, inequalities, uncertainty, significance, comparisons, or negation
+- [ ] Dataset, sensor, product, and method names
+- [ ] Limitation statements, error analysis, and future-work claims
+
+Helpful search for numeric and inequality-heavy sentences:
+
+```bash
+rg -n '[0-9]+([.][0-9]+)?%|[<>]=?|±' paper/${PAPER_ID}.source.md paper/${PAPER_ID}-翻译.md
+```
+
+## 5. Stop-Ship Issues
+
+Do not deliver the translation if any unresolved issue remains in these categories:
+
+- [ ] A number, percentage, threshold, or comparison changed meaning
+- [ ] A negation, limitation, uncertainty cue, or causal relation was weakened, strengthened, or flipped
+- [ ] A formula-adjacent sentence no longer matches the formula or variable definition
+- [ ] A high-risk domain term drifted from the glossary
+- [ ] A figure/table caption, result statement, or conclusion contradicts the source
+- [ ] Extraction corruption still affects reader understanding
+
+## 6. Optional LaTeX Command Spelling
 
 Only run this section when the user provided source `.tex` files. It is not part of the default PDF workflow.
 
@@ -51,7 +103,7 @@ diff <(cd paper_source && grep -ohrIE '\\[a-zA-Z]+' | sort -u) \
 
 Right-side-only commands are suspicious. Verify each one — if not intentionally added (e.g. `\figurename`, `\setCJKmainfont`), it's likely a typo.
 
-## 4. Optional CJK Catcode Issue
+## 7. Optional CJK Catcode Issue
 
 Only run this section when the user provided source `.tex` files.
 
@@ -63,7 +115,7 @@ grep -rnE '\\[a-zA-Z]+[一-龥]' paper_cn/ --include='*.tex'
 
 Each match needs `{}` inserted between macro and CJK text. Background: `xeCJK` sets CJK characters to catcode 11 (letter), so `\xmax概率` is parsed as one undefined command `\xmax概率` instead of `\xmax` + `概率`.
 
-## 5. Terminology Consistency Check
+## 8. Terminology Consistency Check
 
 For each translated Markdown file, verify:
 
@@ -85,7 +137,7 @@ For sea-ice, remote-sensing, and deep-learning papers, explicitly verify:
 - [ ] Reference products/datasets are not called `真值` unless the source is true in situ ground truth
 - [ ] Deep-learning terms such as `multi-task learning`, `knowledge distillation`, `logits`, `softmax`, `cross-entropy`, and `KL divergence` are translated consistently
 
-## 6. Translation Quality Check
+## 9. Translation Quality Check
 
 For each translated file, verify:
 - [ ] Chinese expression is natural and fluent (avoiding direct translation artifacts)
@@ -97,8 +149,10 @@ For each translated file, verify:
 - [ ] Title, highlights, abstract, captions, and conclusion have been polished beyond a literal first draft
 - [ ] No mixed Chinese-English compounds such as `letter-value图`, `AI就绪`, or `logit输出`
 - [ ] No sample-derived bad phrases such as `结果兴趣区域` or `工作空间分辨率`
+- [ ] Formula-adjacent prose reads naturally and still matches the surrounding technical argument
+- [ ] Sentences with comparison, negation, limitation, and uncertainty cues remain semantically aligned with the source
 
-## 7. Content Spot-Check
+## 10. Content Spot-Check
 
 For each translated Markdown file, compare with source to verify:
 
@@ -109,8 +163,20 @@ For each translated Markdown file, compare with source to verify:
 - [ ] Math formulas unchanged
 - [ ] Text inside math commands unchanged (for example `\text{and}` is not translated)
 - [ ] URLs, citations, figure references, and dataset names unchanged where they should be preserved
+- [ ] Numeric claims, percentages, thresholds, and inequality expressions still say the same thing as the source
+- [ ] No conclusion or limitation statement has been softened, overstated, or reversed
 
-## 8. Optional Template Hard-coded Labels
+## 11. Delivery Sign-Off
+
+Before delivery, confirm:
+
+- [ ] `paper/${PAPER_ID}.review-notes.md` is complete
+- [ ] All `stop-ship` issues are resolved
+- [ ] Any remaining `major` or `minor` issues are either fixed or explicitly documented
+- [ ] Final Chinese readthrough completed
+- [ ] Final translation is ready to deliver
+
+## 12. Optional Template Hard-coded Labels
 
 Only run this section when the user provided source `.tex`, `.sty`, or `.cls` files.
 

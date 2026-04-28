@@ -47,12 +47,14 @@ If you already have a clean Markdown source, no extra runtime tools are required
 2. For PDF input, extract and normalize it into `paper/<paper-id>.source.md`.
 3. Build `paper/<paper-id>.terms.md` from the title, abstract, headings, captions, and method/results sections.
 4. Protect formulas manually with placeholders and record them in `paper/<paper-id>.math-map.md`.
-5. Translate `paper/<paper-id>.protected.md` into `paper/<paper-id>.protected-zh.md`, then restore formulas and review the final Markdown.
+5. Translate `paper/<paper-id>.protected.md` into `paper/<paper-id>.protected-zh.md`, then restore formulas.
+6. Run a final multi-pass review, record issues in `paper/<paper-id>.review-notes.md`, and sign off the final Markdown only after stop-ship issues are cleared.
 
 Key outputs:
 - `paper/<paper-id>.source.md`
 - `paper/<paper-id>.terms.md`
 - `paper/<paper-id>.math-map.md`
+- `paper/<paper-id>.review-notes.md`
 - `paper/<paper-id>-翻译.md`
 - `pdf_paper/technical_report.md` when a report is requested
 
@@ -73,6 +75,7 @@ Use pdf paper translator SKILL. 翻译本地的 /path/to/paper.pdf 为中文。
 - If you need a layout-preserving workflow from source LaTeX, use a LaTeX-oriented paper translation skill instead.
 - If PDF extraction quality is poor, fix the Markdown source first and then translate.
 - Keep `source.md`, `protected.md`, `protected-zh.md`, `math-map.md`, and the final translation until review is complete.
+- Do not deliver the translation before the final review notes are complete and all stop-ship issues are resolved.
 - Formula integrity checks and translation style scans are part of the intended workflow.
 
 ## License
