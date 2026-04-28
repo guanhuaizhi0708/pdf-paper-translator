@@ -294,7 +294,7 @@ Before delivery, confirm:
 
 ## Step 6: Generate Technical Report
 
-If the user requests a technical summary, follow [references/summary_prompt.md](references/summary_prompt.md) and create a technical report using [assets/report_template.md](assets/report_template.md). By default, generate the report in the current context. Only split the work into separate tasks when the user explicitly asks for parallel work.
+If the user separately requests a technical summary, follow [references/summary_prompt.md](references/summary_prompt.md) and create a technical report using [assets/report_template.md](assets/report_template.md). By default, generate the report in the current context. Only split the work into separate tasks when the user explicitly asks for parallel work.
 
 Save report:
 ```bash
@@ -303,9 +303,17 @@ pdf_paper/technical_report.md
 
 ## Final Deliverables
 
+The only final deliverable is:
+
 1. **Translated Markdown**: `paper/${PAPER_ID}-翻译.md`
-2. **Technical report** (if requested): `pdf_paper/technical_report.md`
-3. **Intermediate sources**: `paper/${PAPER_ID}.source.md`, `paper/${PAPER_ID}.terms.md`, `paper/${PAPER_ID}.review-notes.md`, protected Markdown, and manual math mapping
+
+Working files used during translation and review may include:
+- `paper/${PAPER_ID}.source.md`
+- `paper/${PAPER_ID}.terms.md`
+- `paper/${PAPER_ID}.review-notes.md`
+- protected Markdown files
+- manual math mapping files
+- `pdf_paper/technical_report.md` only when the user separately asks for a report
 
 ## Common Issues & Solutions
 
